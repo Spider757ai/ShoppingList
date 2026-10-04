@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+
+# Xcode: build output and per-user settings
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+
+# Swift Package Manager build output
+.build/
