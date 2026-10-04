@@ -34,10 +34,13 @@ jobs:
           simulator = subprocess.check_output(['xcrun', 'simctl', 'create', 'ShoppingList CI', device['identifier'], runtime['identifier']], text=True).strip()
           with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
               output.write('id=' + simulator + '\n')
+          with open(os.path.join(os.environ['RUNNER_TEMP'], 'shoppinglist-simulator-id'), 'w') as output:
+              output.write(simulator + '\n')
           PY
-          xcrun simctl boot '${{ steps.simulator.outputs.id }}'
-          xcrun simctl bootstatus '${{ steps.simulator.outputs.id }}' -b
-          xcrun simctl status_bar '${{ steps.simulator.outputs.id }}' override --time '9:41' --batteryState charged --batteryLevel 100
+          read -r simulator_id < "$RUNNER_TEMP/shoppinglist-simulator-id"
+          xcrun simctl boot "$simulator_id"
+          xcrun simctl bootstatus "$simulator_id" -b
+          xcrun simctl status_bar "$simulator_id" override --time '9:41' --batteryState charged --batteryLevel 100
 
       - name: Build and test
         shell: bash
