@@ -20,6 +20,7 @@ struct AddShoppingItemView: View {
         NavigationStack {
             Form {
                 TextField("Название", text: $name)
+                    .accessibilityIdentifier("purchaseName")
 
                 Picker("Категория", selection: $category) {
                     ForEach(ShoppingCategory.allCases, id: \.self) { option in
@@ -33,6 +34,7 @@ struct AddShoppingItemView: View {
                     }
                 }
                 .pickerStyle(.navigationLink)
+                .accessibilityIdentifier("purchaseCategory")
 
                 Stepper(
                     "Количество: \(quantity)",
@@ -63,6 +65,7 @@ struct AddShoppingItemView: View {
                         dismiss()
                     }
                     .disabled(!canSave)
+                    .accessibilityIdentifier("savePurchase")
                 }
             }
         }

@@ -22,6 +22,12 @@ struct ShoppingItemRow: View {
                 )
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(
+                item.isPurchased
+                    ? "Отметить \(item.name) как не купленное"
+                    : "Отметить \(item.name) как купленное"
+            )
+            .accessibilityIdentifier("togglePurchase-\(item.name)")
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.name)
@@ -40,4 +46,14 @@ struct ShoppingItemRow: View {
         }
         .padding(.vertical, 4)
     }
+}
+
+#Preview("Нужно купить") {
+    ShoppingItemRow(item: ShoppingItem.samples[0]) { }
+        .padding()
+}
+
+#Preview("Куплено") {
+    ShoppingItemRow(item: ShoppingItem.samples[2]) { }
+        .padding()
 }

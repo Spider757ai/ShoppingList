@@ -1,0 +1,74 @@
+name: iOS build and screenshots
+
+on:
+  push:
+    paths:
+      - 'ShoppingList/**'
+      - 'ShoppingListUITests/**'
+      - 'ShoppingList.xcodeproj/**'
+      - '.github/workflows/ios.yml'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: xcode-27
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create iPhone simulator
+        id: simulator
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          data = json.loads(subprocess.check_output(['xcrun', 'simctl', 'list', '-j']))
+          runtimes = [r for r in data['runtimes'] if r.get('isAvailable') and '.iOS-' in r['identifier']]
+          runtime = max(runtimes, key=lambda r: tuple(map(int, r['version'].split('.'))))
+          phones = [d for d in data['devicetypes'] if d['name'].startswith('iPhone')]
+          device = next((d for d in phones if d['name'] == 'iPhone 17'), phones[-1])
+          simulator = subprocess.check_output(['xcrun', 'simctl', 'create', 'ShoppingList CI', device['identifier'], runtime['identifier']], text=True).strip()
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write('id=' + simulator + '\n')
+          PY
+          xcrun simctl boot '${{ steps.simulator.outputs.id }}'
+          xcrun simctl bootstatus '${{ steps.simulator.outputs.id }}' -b
+          xcrun simctl status_bar '${{ steps.simulator.outputs.id }}' override --time '9:41' --batteryState charged --batteryLevel 100
+
+      - name: Build and test
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p "$RUNNER_TEMP/ShoppingListArtifacts"
+          xcodebuild test \
+            -project ShoppingList.xcodeproj \
+            -scheme ShoppingList \
+            -destination 'platform=iOS Simulator,id=${{ steps.simulator.outputs.id }}' \
+            -derivedDataPath "$RUNNER_TEMP/ShoppingListBuild" \
+            -resultBundlePath "$RUNNER_TEMP/ShoppingListTests.xcresult" \
+            -parallel-testing-enabled NO \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee "$RUNNER_TEMP/ShoppingListArtifacts/build.log"
+
+      - name: Export screenshots and source archive
+        if: always()
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/ShoppingListArtifacts"
+          if [ -d "$RUNNER_TEMP/ShoppingListTests.xcresult" ]; then
+            xcrun xcresulttool export attachments \
+              --path "$RUNNER_TEMP/ShoppingListTests.xcresult" \
+              --output-path "$RUNNER_TEMP/ShoppingListArtifacts/screenshots"
+          fi
+          git archive --format=zip HEAD -o "$RUNNER_TEMP/ShoppingListArtifacts/ShoppingList-source.zip"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shoppinglist-check
+          path: ${{ runner.temp }}/ShoppingListArtifacts
+          retention-days: 14

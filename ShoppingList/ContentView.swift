@@ -60,10 +60,13 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 0) {
+                Text("Осталось купить: \(remainingCount)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+
                 List {
-                    Text("Осталось купить: \(remainingCount)")
-                        .padding(.horizontal)
-                        .padding(.top, 8)
                     Picker("Статус", selection: $selectedFilter) {
                         Text("Все").tag(ShoppingFilter.all)
                         Text("Нужно купить").tag(ShoppingFilter.active)
@@ -102,6 +105,7 @@ struct ContentView: View {
                         Text("По количеству").tag(SortOption.quantity)
                     }
                 }
+                .accessibilityIdentifier("sortMenu")
             }
             .sheet(isPresented: $showingAddItem) {
                 AddShoppingItemView { newItem in
@@ -130,4 +134,8 @@ struct ContentView: View {
         let ids = offsets.map { visibleItems[$0].id }
         items.removeAll { ids.contains($0.id) }
     }
+}
+
+#Preview("Список покупок") {
+    ContentView()
 }

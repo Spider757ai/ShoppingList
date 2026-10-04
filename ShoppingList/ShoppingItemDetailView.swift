@@ -22,6 +22,7 @@ struct ShoppingItemDetailView: View {
     var body: some View {
         Form {
             TextField("Название", text: $draft.name)
+                .accessibilityIdentifier("purchaseName")
 
             Picker("Категория", selection: $draft.category) {
                 // Сохраняем возможность показать старую категорию
@@ -66,6 +67,7 @@ struct ShoppingItemDetailView: View {
                     dismiss()
                 }
                 .disabled(!canSave)
+                .accessibilityIdentifier("savePurchase")
             }
         }
     }
