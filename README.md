@@ -35,4 +35,8 @@
 
 Открыть `ShoppingList.xcodeproj` в Xcode, выбрать симулятор iPhone и нажать `⌘R`.
 
+## Скриншоты
+
+[Экраны приложения](screenshots)
+
 [Условие задания](https://github.com/ProSkyMishka/NIS/blob/main/Домашнее-задание-лонгрид.md)
